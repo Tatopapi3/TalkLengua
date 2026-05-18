@@ -15,7 +15,7 @@ export interface ProgressStore {
   attempts: QuizAttemptRecord[]
 }
 
-const KEY = 'talklengua_progress'
+const KEY = 'hyeotalk_progress'
 
 function load(): ProgressStore {
   if (typeof window === 'undefined') return { xp: 0, completedLessons: [], attempts: [] }

@@ -46,7 +46,7 @@ export default function HomePage() {
       <nav className="flex items-center justify-between px-6 py-4 border-b border-white/10 sticky top-0 bg-gray-950/80 backdrop-blur-sm z-10">
         <div className="flex items-center gap-2">
           <span className="text-2xl">💬</span>
-          <span className="text-xl font-bold tracking-tight">TalkLengua</span>
+          <span className="text-xl font-bold tracking-tight">HyeoTalk</span>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/learn/ko" className="text-sm text-gray-400 hover:text-white transition-colors">Learn</Link>
@@ -126,7 +126,7 @@ export default function HomePage() {
       <section className="px-6 py-8 border-t border-white/5">
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <p className="text-xs text-gray-500">Built with Claude Sonnet · OpenAI TTS · Supabase · Next.js</p>
-          <p className="text-xs text-gray-600">© 2026 TalkLengua · Juan Fernandez</p>
+          <p className="text-xs text-gray-600">© 2026 HyeoTalk · Juan Fernandez</p>
         </div>
       </section>
     </main>

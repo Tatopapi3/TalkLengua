@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const notoKr = Noto_Sans_KR({ subsets: ['latin'], variable: '--font-noto-kr', weight: ['400', '500', '700'] })
 
 export const metadata: Metadata = {
-  title: 'TalkLengua — Learn Korean with AI',
+  title: 'HyeoTalk — Learn Korean with AI',
   description: 'Practice Korean conversations with an AI tutor, learn Hangul, and get instant grammar corrections. AI-powered language learning app.',
 }
 

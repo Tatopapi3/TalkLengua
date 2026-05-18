@@ -38,7 +38,7 @@ export default function ProgressPage() {
       <nav className="flex items-center justify-between px-6 py-4 border-b border-white/10">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-2xl">💬</span>
-          <span className="text-xl font-bold tracking-tight">TalkLengua</span>
+          <span className="text-xl font-bold tracking-tight">HyeoTalk</span>
         </Link>
         <div className="flex items-center gap-3">
           <Link href="/learn/ko" className="text-sm text-gray-400 hover:text-white transition-colors">
