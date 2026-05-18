@@ -1,43 +1,37 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 
-export function useTTS(_langCode = 'ko') {
+export function useTTS(langCode = 'ko') {
   const [isSpeaking, setIsSpeaking] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const stop = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel()
     }
     setIsSpeaking(false)
   }, [])
 
-  const speak = useCallback(async (text: string) => {
+  const speak = useCallback((text: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
     stop()
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = langCode === 'ko' ? 'ko-KR' : langCode
+    utterance.rate = 0.85
+    utterance.pitch = 1
+
+    const voices = window.speechSynthesis.getVoices()
+    const koreanVoice = voices.find(v => v.lang.startsWith('ko'))
+    if (koreanVoice) utterance.voice = koreanVoice
+
+    utterance.onstart = () => setIsSpeaking(true)
+    utterance.onend = () => setIsSpeaking(false)
+    utterance.onerror = () => setIsSpeaking(false)
+
     setIsSpeaking(true)
-    try {
-      const res = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      })
-      if (!res.ok) throw new Error('TTS failed')
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
-      audioRef.current = audio
-      audio.onended = () => {
-        setIsSpeaking(false)
-        URL.revokeObjectURL(url)
-      }
-      audio.onerror = () => setIsSpeaking(false)
-      await audio.play()
-    } catch {
-      setIsSpeaking(false)
-    }
-  }, [stop])
+    window.speechSynthesis.speak(utterance)
+  }, [langCode, stop])
 
   return { speak, stop, isSpeaking }
 }
