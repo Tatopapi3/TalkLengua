@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect, useCallback, useRef } from 'react'
+import { use, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { pronunciationQuests } from '@/content/korean/pronunciation'
 import { useTTS } from '@/lib/speech/useTTS'
@@ -10,13 +10,17 @@ import type { PronunciationQuest } from '@/content/korean/pronunciation'
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function normalize(s: string) {
-  return s.trim().replace(/\s+/g, '')
+  return s.trim().toLowerCase().replace(/\s+/g, '')
 }
 
-function checkPronunciation(heard: string, expected: string): boolean {
+function checkPronunciation(heard: string, korean: string, romanization: string): boolean {
   const h = normalize(heard)
-  const e = normalize(expected)
-  return h === e || h.includes(e) || e.includes(h)
+  const k = normalize(korean)
+  const r = normalize(romanization).replace(/[^a-z]/g, '') // letters only
+  if (!h) return false
+  // accept Korean transcript OR romanization spoken in English
+  return h === k || h.includes(k) || k.includes(h) ||
+    h === r || h.includes(r) || r.includes(h)
 }
 
 // ── QuestCard (lobby) ─────────────────────────────────────────────────────────
@@ -81,7 +85,6 @@ function ActiveQuest({
   const [heard, setHeard] = useState('')
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
-  const [attempts, setAttempts] = useState(0)
 
   const { speak, isSpeaking } = useTTS(lang)
   const { isListening, transcript, error, startListening, stopListening, clearTranscript } = useSTT(lang)
@@ -90,16 +93,19 @@ function ActiveQuest({
   const total = quest.words.length
   const isLast = idx === total - 1
 
-  // fire when STT finishes
+  // fire when STT finishes — handles both empty and non-empty transcript
   useEffect(() => {
-    if (!transcript || isListening) return
-    const correct = checkPronunciation(transcript, word.korean)
+    if (isListening || result !== 'listening') return
+    if (!transcript) {
+      setResult('error')
+      return
+    }
+    const correct = checkPronunciation(transcript, word.korean, word.romanization)
     setHeard(transcript)
     setResult(correct ? 'correct' : 'wrong')
     if (correct) setScore(s => s + 1)
     setStreak(s => correct ? s + 1 : 0)
-    setAttempts(s => s + 1)
-  }, [transcript, isListening, word.korean])
+  }, [transcript, isListening, result, word.korean, word.romanization])
 
   useEffect(() => {
     if (error) setResult('error')
@@ -199,7 +205,10 @@ function ActiveQuest({
           </div>
         )}
         {result === 'error' && (
-          <p className="text-red-400 text-xs mb-4">Mic error — check browser permissions and try again</p>
+          <div className="mb-4 space-y-1">
+            <p className="text-amber-400 font-bold">Nothing heard — try again</p>
+            <p className="text-xs text-gray-400">Speak clearly into your mic. You can say it in Korean <span className="text-white">{word.korean}</span> or English <span className="text-white">{word.romanization}</span></p>
+          </div>
         )}
         {result === 'listening' && isListening && (
           <p className="text-red-400 text-sm animate-pulse mb-4">🎤 Listening... speak now</p>
