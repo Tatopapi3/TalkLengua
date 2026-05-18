@@ -46,6 +46,21 @@ export default async function LearnPage({ params }: { params: Promise<{ lang: st
 
         {isKorean && (
           <>
+            {/* Pronunciation Quests banner */}
+            <Link
+              href="/learn/ko/pronunciation"
+              className="flex items-center justify-between bg-gradient-to-r from-violet-600/20 to-blue-600/10 border border-violet-500/30 hover:border-violet-500/60 rounded-2xl p-5 mb-10 group transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <span className="text-3xl">🎤</span>
+                <div>
+                  <p className="font-bold group-hover:text-violet-300 transition-colors">Pronunciation Quests</p>
+                  <p className="text-sm text-gray-400">Speak Korean words out loud — the app listens and scores you</p>
+                </div>
+              </div>
+              <span className="text-violet-400 text-sm font-semibold flex-shrink-0">Start →</span>
+            </Link>
+
             {/* Hangul Module */}
             <section className="mb-12">
               <div className="flex items-center gap-3 mb-4">
