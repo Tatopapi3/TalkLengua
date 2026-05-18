@@ -16,13 +16,14 @@ export function useSTT(langCode = 'ko') {
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<any>(null)
+  const transcriptRef = useRef('')
 
   const startListening = useCallback(() => {
     if (typeof window === 'undefined') return
-    const SR = window.SpeechRecognition ?? (window as any).webkitSpeechRecognition
+    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
     if (!SR) {
-      setError('Speech recognition is not supported in this browser. Try Chrome.')
+      setError('Speech recognition not supported. Use Chrome.')
       return
     }
 
@@ -30,6 +31,7 @@ export function useSTT(langCode = 'ko') {
     recognition.lang = LANG_CODES[langCode] ?? langCode
     recognition.continuous = false
     recognition.interimResults = true
+    transcriptRef.current = ''
 
     recognition.onstart = () => {
       setIsListening(true)
@@ -41,17 +43,22 @@ export function useSTT(langCode = 'ko') {
       const result = Array.from(event.results)
         .map(r => r[0].transcript)
         .join('')
+      transcriptRef.current = result
       setTranscript(result)
     }
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       setError(event.error === 'not-allowed'
-        ? 'Microphone access denied. Please allow mic access and try again.'
+        ? 'Microphone access denied. Allow mic access and try again.'
         : 'Could not recognize speech. Try again.')
       setIsListening(false)
     }
 
-    recognition.onend = () => setIsListening(false)
+    // Set transcript from ref first, then mark done — React 18 batches both
+    recognition.onend = () => {
+      setTranscript(transcriptRef.current)
+      setIsListening(false)
+    }
 
     recognitionRef.current = recognition
     recognition.start()
@@ -59,10 +66,12 @@ export function useSTT(langCode = 'ko') {
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop()
-    setIsListening(false)
   }, [])
 
-  const clearTranscript = useCallback(() => setTranscript(''), [])
+  const clearTranscript = useCallback(() => {
+    transcriptRef.current = ''
+    setTranscript('')
+  }, [])
 
   return { isListening, transcript, error, startListening, stopListening, clearTranscript }
 }
