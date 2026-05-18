@@ -9,17 +9,27 @@ import type { PronunciationQuest } from '@/content/korean/pronunciation'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-function normalize(s: string) {
-  return s.trim().toLowerCase().replace(/\s+/g, '')
-}
-
-function checkPronunciation(heard: string, korean: string, romanization: string): boolean {
-  const h = normalize(heard).replace(/[^a-z가-힣]/g, '')
-  const k = normalize(korean)
-  const r = normalize(romanization).replace(/[^a-z]/g, '') // strip hyphens/spaces
-  if (!h) return false
-  return h === k || h.includes(k) || k.includes(h) ||
-    h === r || h.includes(r) || r.includes(h)
+async function gradePronunciation(
+  heard: string,
+  korean: string,
+  romanization: string,
+  english: string
+): Promise<{ correct: boolean; score: number; feedback: string }> {
+  try {
+    const res = await fetch('/api/grade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ heard, korean, romanization, english }),
+    })
+    if (!res.ok) throw new Error('grade failed')
+    return await res.json()
+  } catch {
+    // fallback to simple match if API fails
+    const h = heard.trim().toLowerCase().replace(/[^a-z가-힣]/g, '')
+    const r = romanization.toLowerCase().replace(/[^a-z]/g, '')
+    const correct = h === r || h.includes(r) || r.includes(h)
+    return { correct, score: correct ? 80 : 20, feedback: correct ? 'Good job!' : 'Keep practicing!' }
+  }
 }
 
 // ── QuestCard (lobby) ─────────────────────────────────────────────────────────
@@ -108,12 +118,17 @@ function ActiveQuest({
       setResult('error')
       return
     }
-    const correct = checkPronunciation(transcript, word.korean, word.romanization)
-    setHeard(transcript)
-    setResult(correct ? 'correct' : 'wrong')
-    if (correct) setScore(s => s + 1)
-    setStreak(s => correct ? s + 1 : 0)
-  }, [isListening, transcript, word.korean, word.romanization])
+
+    const captured = transcript
+    setHeard(captured)
+    setResult('listening') // show grading spinner
+    gradePronunciation(captured, word.korean, word.romanization, word.english).then(({ correct, feedback }) => {
+      setResult(correct ? 'correct' : 'wrong')
+      setHeard(`${captured} — ${feedback}`)
+      if (correct) setScore(s => s + 1)
+      setStreak(s => correct ? s + 1 : 0)
+    })
+  }, [isListening, transcript, word.korean, word.romanization, word.english])
 
   useEffect(() => {
     if (error) setResult('error')
@@ -202,16 +217,15 @@ function ActiveQuest({
         {/* result feedback */}
         {result === 'correct' && (
           <div className="mb-4 space-y-1">
-            <p className="text-emerald-400 font-bold text-lg">✓ Perfect!</p>
-            <p className="text-xs text-gray-400">You said: <span className="text-white">{heard}</span></p>
+            <p className="text-emerald-400 font-bold text-lg">✓ Correct!</p>
+            <p className="text-xs text-gray-400">{heard}</p>
           </div>
         )}
         {result === 'wrong' && (
           <div className="mb-4 space-y-1">
-            <p className="text-red-400 font-bold">✗ Try again</p>
-            <p className="text-xs text-gray-400">
-              Heard: <span className="text-white">{heard || '(nothing)'}</span> · Expected: <span className="text-violet-300">{word.korean}</span>
-            </p>
+            <p className="text-red-400 font-bold">✗ Not quite</p>
+            <p className="text-xs text-gray-400">{heard}</p>
+            <p className="text-xs text-gray-500">Target: <span className="text-violet-300">{word.korean} · {word.romanization}</span></p>
           </div>
         )}
         {result === 'error' && (
