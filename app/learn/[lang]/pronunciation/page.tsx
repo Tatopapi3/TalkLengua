@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect } from 'react'
+import { use, useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { pronunciationQuests } from '@/content/korean/pronunciation'
 import { useTTS } from '@/lib/speech/useTTS'
@@ -88,14 +88,21 @@ function ActiveQuest({
 
   const { speak, isSpeaking } = useTTS(lang)
   const { isListening, transcript, error, startListening, stopListening, clearTranscript } = useSTT(lang)
+  const wasListeningRef = useRef(false)
 
   const word = quest.words[idx]
   const total = quest.words.length
   const isLast = idx === total - 1
 
-  // fire when STT finishes — handles both empty and non-empty transcript
+  // only process results when isListening transitions true → false
   useEffect(() => {
-    if (isListening || result !== 'listening') return
+    if (isListening) {
+      wasListeningRef.current = true
+      return
+    }
+    if (!wasListeningRef.current) return
+    wasListeningRef.current = false
+
     if (!transcript) {
       setResult('error')
       return
@@ -105,13 +112,14 @@ function ActiveQuest({
     setResult(correct ? 'correct' : 'wrong')
     if (correct) setScore(s => s + 1)
     setStreak(s => correct ? s + 1 : 0)
-  }, [transcript, isListening, result, word.korean, word.romanization])
+  }, [isListening, transcript, word.korean, word.romanization])
 
   useEffect(() => {
     if (error) setResult('error')
   }, [error])
 
   function handleListen() {
+    wasListeningRef.current = false
     clearTranscript()
     setHeard('')
     setResult('listening')
