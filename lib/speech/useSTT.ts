@@ -29,7 +29,7 @@ export function useSTT(langCode = 'ko') {
 
     const recognition = new SR()
     recognition.lang = LANG_CODES[langCode] ?? langCode
-    recognition.continuous = false
+    recognition.continuous = true   // keep mic open until user stops
     recognition.interimResults = true
     transcriptRef.current = ''
 
@@ -48,13 +48,14 @@ export function useSTT(langCode = 'ko') {
     }
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      setError(event.error === 'not-allowed'
-        ? 'Microphone access denied. Allow mic access and try again.'
-        : 'Could not recognize speech. Try again.')
+      if (event.error === 'not-allowed') {
+        setError('Microphone access denied. Click the 🔒 in the address bar and allow microphone.')
+      } else if (event.error !== 'aborted') {
+        setError('Could not recognize speech. Try again.')
+      }
       setIsListening(false)
     }
 
-    // Set transcript from ref first, then mark done — React 18 batches both
     recognition.onend = () => {
       setTranscript(transcriptRef.current)
       setIsListening(false)

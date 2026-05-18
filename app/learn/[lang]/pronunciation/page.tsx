@@ -221,23 +221,40 @@ function ActiveQuest({
           </div>
         )}
         {result === 'listening' && isListening && (
-          <p className="text-red-400 text-sm animate-pulse mb-4">🎤 Listening... speak now</p>
+          <div className="mb-4 space-y-2">
+            <p className="text-red-400 text-sm animate-pulse">🎤 Listening… speak then press Stop</p>
+            {transcript && (
+              <p className="text-xs text-gray-300 bg-white/5 rounded-xl px-3 py-1.5">
+                Heard: <span className="text-white font-semibold">{transcript}</span>
+              </p>
+            )}
+          </div>
         )}
       </div>
 
       {/* action buttons */}
       <div className="flex gap-3 justify-center">
         {(result === 'idle' || result === 'listening') && (
-          <button
-            onClick={isListening ? stopListening : handleListen}
-            className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all
-              ${isListening
-                ? 'bg-red-600 text-white animate-pulse ring-4 ring-red-500/20'
-                : 'bg-violet-600 hover:bg-violet-500 text-white'
-              }`}
-          >
-            {isListening ? '⏹ Stop' : '🎤 Speak'}
-          </button>
+          <div className="flex gap-3 justify-center">
+            {!isListening ? (
+              <button
+                onClick={handleListen}
+                className="px-8 py-3 rounded-2xl font-bold text-sm bg-violet-600 hover:bg-violet-500 text-white transition-all"
+              >
+                🎤 Speak
+              </button>
+            ) : (
+              <>
+                <p className="self-center text-xs text-gray-500">Say it, then →</p>
+                <button
+                  onClick={stopListening}
+                  className="px-8 py-3 rounded-2xl font-bold text-sm bg-red-600 hover:bg-red-500 text-white transition-all ring-4 ring-red-500/20"
+                >
+                  ⏹ Stop & Grade
+                </button>
+              </>
+            )}
+          </div>
         )}
 
         {result === 'wrong' && (
