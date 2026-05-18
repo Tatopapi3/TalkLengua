@@ -14,11 +14,10 @@ function normalize(s: string) {
 }
 
 function checkPronunciation(heard: string, korean: string, romanization: string): boolean {
-  const h = normalize(heard)
+  const h = normalize(heard).replace(/[^a-z가-힣]/g, '')
   const k = normalize(korean)
-  const r = normalize(romanization).replace(/[^a-z]/g, '') // letters only
+  const r = normalize(romanization).replace(/[^a-z]/g, '') // strip hyphens/spaces
   if (!h) return false
-  // accept Korean transcript OR romanization spoken in English
   return h === k || h.includes(k) || k.includes(h) ||
     h === r || h.includes(r) || r.includes(h)
 }
@@ -87,7 +86,9 @@ function ActiveQuest({
   const [streak, setStreak] = useState(0)
 
   const { speak, isSpeaking } = useTTS(lang)
-  const { isListening, transcript, error, startListening, stopListening, clearTranscript } = useSTT(lang)
+  // use en-US for STT — Korean single syllables are below browser detection threshold;
+  // learners say the romanization which en-US captures reliably
+  const { isListening, transcript, error, startListening, stopListening, clearTranscript } = useSTT('en')
   const wasListeningRef = useRef(false)
 
   const word = quest.words[idx]
@@ -180,7 +181,8 @@ function ActiveQuest({
 
         <p className="text-8xl font-bold mb-3 tracking-tight">{word.korean}</p>
         <p className="text-gray-400 text-sm mb-1">{word.romanization}</p>
-        <p className="text-gray-500 text-xs mb-6">{word.english}</p>
+        <p className="text-gray-500 text-xs">{word.english}</p>
+        <p className="text-violet-400/60 text-xs mb-6">Say: <span className="text-violet-300 font-semibold">{word.romanization.replace(/-/g, '')}</span></p>
 
         {word.tip && (
           <p className="text-xs text-violet-300/70 italic mb-6 max-w-xs mx-auto">
@@ -215,7 +217,7 @@ function ActiveQuest({
         {result === 'error' && (
           <div className="mb-4 space-y-1">
             <p className="text-amber-400 font-bold">Nothing heard — try again</p>
-            <p className="text-xs text-gray-400">Speak clearly into your mic. You can say it in Korean <span className="text-white">{word.korean}</span> or English <span className="text-white">{word.romanization}</span></p>
+            <p className="text-xs text-gray-400">Say it out loud: <span className="text-white font-semibold">{word.romanization.replace(/-/g, '')}</span> — speak clearly and close to your mic</p>
           </div>
         )}
         {result === 'listening' && isListening && (
