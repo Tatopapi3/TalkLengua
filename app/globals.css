@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-inter: 'Inter', sans-serif;
+  --font-noto-kr: 'Noto Sans KR', sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.font-korean {
+  font-family: var(--font-noto-kr), sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Light mode overrides ── */
+html.light {
+  --bg-base: #f8f7f4;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f0ed;
+  --border: rgba(0,0,0,0.08);
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-muted: #999999;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html.dark {
+  --bg-base: #030712;
+  --bg-card: #111827;
+  --bg-card-hover: #1f2937;
+  --border: rgba(255,255,255,0.08);
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-muted: #4b5563;
 }
+
+/* Light mode surface overrides for Tailwind utility classes */
+html.light body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* Backgrounds */
+html.light .bg-gray-950 { background-color: var(--bg-base) !important; }
+html.light .bg-gray-900 { background-color: var(--bg-card) !important; }
+html.light .bg-gray-900\/50 { background-color: rgba(255,255,255,0.6) !important; }
+html.light .bg-gray-800 { background-color: #e5e7eb !important; }
+html.light .bg-white\/5 { background-color: rgba(0,0,0,0.04) !important; }
+html.light .hover\:bg-gray-800:hover { background-color: var(--bg-card-hover) !important; }
+html.light .hover\:bg-gray-900\/50:hover { background-color: var(--bg-card-hover) !important; }
+
+/* Borders */
+html.light .border-white\/10 { border-color: rgba(0,0,0,0.10) !important; }
+html.light .border-white\/5 { border-color: rgba(0,0,0,0.06) !important; }
+html.light .border-white\/20 { border-color: rgba(0,0,0,0.18) !important; }
+html.light .border-white\/40 { border-color: rgba(0,0,0,0.30) !important; }
+html.light .hover\:border-white\/20:hover { border-color: rgba(0,0,0,0.25) !important; }
+html.light .hover\:border-white\/40:hover { border-color: rgba(0,0,0,0.40) !important; }
+
+/* Text */
+html.light .text-white { color: var(--text-primary) !important; }
+html.light .text-gray-200 { color: #374151 !important; }
+html.light .text-gray-300 { color: var(--text-secondary) !important; }
+html.light .text-gray-400 { color: var(--text-secondary) !important; }
+html.light .text-gray-500 { color: var(--text-muted) !important; }
+html.light .text-gray-600 { color: #6b7280 !important; }
+html.light .text-gray-700 { color: #374151 !important; }
+html.light .hover\:text-white:hover { color: var(--text-primary) !important; }
+
+/* Violet badge / pill */
+html.light .bg-violet-900\/40 { background-color: #ede9fe !important; }
+html.light .border-violet-700\/50 { border-color: #a78bfa !important; }
+html.light .text-violet-300 { color: #6d28d9 !important; }
+
+/* Violet gradient card (Korean feature card) */
+html.light .from-violet-900\/50 { --tw-gradient-from: #ede9fe !important; }
+html.light .to-gray-900 { --tw-gradient-to: #f8f7f4 !important; }
+html.light .border-violet-700\/40 { border-color: #c4b5fd !important; }
+
+/* Korean feature card stat boxes */
+html.light .bg-white\/5 { background-color: rgba(0,0,0,0.04) !important; }
+
+/* ── Portfolio landing page ── */
+.portfolio-bg {
+  background-color: #06060e;
+}
+
+/* Fixed full-viewport glow — always behind everything */
+.portfolio-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(ellipse 75% 60% at 68% 20%, rgba(109, 40, 217, 0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 50% at 12% 82%, rgba(49, 15, 162, 0.32) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 45% at 88% 72%, rgba(88, 28, 135, 0.18) 0%, transparent 55%);
+}
+
+@keyframes float-a {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-18px) rotate(-4deg); }
+  66%       { transform: translateY(-8px)  rotate(3deg); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translateY(0px) rotate(2deg); }
+  50%      { transform: translateY(-26px) rotate(-2deg); }
+}
+@keyframes float-c {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  40%      { transform: translateY(-14px) rotate(4deg); }
+  80%      { transform: translateY(-20px) rotate(-1deg); }
+}
+@keyframes portfolio-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.float-1 { animation: float-a 6.2s ease-in-out infinite; }
+.float-2 { animation: float-b 8.5s ease-in-out infinite 1.2s; }
+.float-3 { animation: float-c 7.1s ease-in-out infinite 2.3s; }
+.float-4 { animation: float-a 9.8s ease-in-out infinite 0.7s; }
+.float-5 { animation: float-b 5.8s ease-in-out infinite 3.4s; }
+.float-6 { animation: float-c 8.0s ease-in-out infinite 1.8s; }
+
+.portfolio-marquee { animation: portfolio-marquee 26s linear infinite; }

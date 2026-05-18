@@ -1,0 +1,71 @@
+import type { Language } from '@/types'
+
+export const LANGUAGES: Language[] = [
+  {
+    code: 'ko',
+    name: 'Korean',
+    nativeName: '한국어',
+    flag: '🇰🇷',
+    cefr: ['A1', 'A2', 'B1', 'B2'],
+    hasConversationPartner: true,
+    hasScript: true,
+    scriptName: 'Hangul',
+  },
+  {
+    code: 'pt',
+    name: 'Portuguese',
+    nativeName: 'Português',
+    flag: '🇧🇷',
+    cefr: ['A1', 'A2', 'B1'],
+    hasConversationPartner: false,
+    hasScript: false,
+  },
+  {
+    code: 'ru',
+    name: 'Russian',
+    nativeName: 'Русский',
+    flag: '🇷🇺',
+    cefr: ['A1', 'A2'],
+    hasConversationPartner: false,
+    hasScript: true,
+    scriptName: 'Cyrillic',
+  },
+  {
+    code: 'es',
+    name: 'Spanish',
+    nativeName: 'Español',
+    flag: '🇪🇸',
+    cefr: ['A1', 'A2'],
+    hasConversationPartner: false,
+    hasScript: false,
+  },
+  {
+    code: 'en',
+    name: 'English',
+    nativeName: 'English',
+    flag: '🇬🇧',
+    cefr: ['A1', 'A2'],
+    hasConversationPartner: false,
+    hasScript: false,
+  },
+  {
+    code: 'fr',
+    name: 'French',
+    nativeName: 'Français',
+    flag: '🇫🇷',
+    cefr: ['A1', 'A2'],
+    hasConversationPartner: false,
+    hasScript: false,
+  },
+  {
+    code: 'de',
+    name: 'German',
+    nativeName: 'Deutsch',
+    flag: '🇩🇪',
+    cefr: ['A1', 'A2'],
+    hasConversationPartner: false,
+    hasScript: false,
+  },
+]
+
+export const PRIMARY_LANGUAGE = LANGUAGES[0] // Korean
