@@ -4,7 +4,7 @@ import { use, useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { pronunciationQuests } from '@/content/korean/pronunciation'
 import { useTTS } from '@/lib/speech/useTTS'
-import { useWhisper } from '@/lib/speech/useWhisper'
+import { useSTT } from '@/lib/speech/useSTT'
 import type { PronunciationQuest } from '@/content/korean/pronunciation'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -96,19 +96,17 @@ function ActiveQuest({
   const [streak, setStreak] = useState(0)
 
   const { speak, isSpeaking } = useTTS(lang)
-  const { isRecording, isTranscribing, transcript, error, startRecording, stopRecording, clearTranscript } = useWhisper(lang)
-  const wasRecordingRef = useRef(false)
+  const { isListening, transcript, error, startListening, stopListening, clearTranscript } = useSTT('ko')
+  const wasListeningRef = useRef(false)
 
   const word = quest.words[idx]
   const total = quest.words.length
   const isLast = idx === total - 1
 
-  // fire when Whisper finishes transcribing
   useEffect(() => {
-    if (isRecording) { wasRecordingRef.current = true; return }
-    if (isTranscribing) return
-    if (!wasRecordingRef.current) return
-    wasRecordingRef.current = false
+    if (isListening) { wasListeningRef.current = true; return }
+    if (!wasListeningRef.current) return
+    wasListeningRef.current = false
 
     if (!transcript) { setResult('error'); return }
 
@@ -121,18 +119,18 @@ function ActiveQuest({
       if (correct) setScore(s => s + 1)
       setStreak(s => correct ? s + 1 : 0)
     })
-  }, [isRecording, isTranscribing, transcript, word.korean, word.romanization, word.english])
+  }, [isListening, transcript, word.korean, word.romanization, word.english])
 
   useEffect(() => {
     if (error) setResult('error')
   }, [error])
 
   function handleListen() {
-    wasRecordingRef.current = false
+    wasListeningRef.current = false
     clearTranscript()
     setHeard('')
     setResult('listening')
-    startRecording()
+    startListening()
   }
 
   function handleNext() {
@@ -227,21 +225,26 @@ function ActiveQuest({
             <p className="text-xs text-gray-400">Say it out loud: <span className="text-white font-semibold">{word.romanization.replace(/-/g, '')}</span> — speak clearly and close to your mic</p>
           </div>
         )}
-        {result === 'listening' && isRecording && (
+        {result === 'listening' && isListening && (
           <div className="mb-4 space-y-2">
-            <p className="text-red-400 text-sm animate-pulse">🎤 Recording… speak then press Stop</p>
+            <p className="text-red-400 text-sm animate-pulse">🎤 Listening… speak then press Stop</p>
+            {transcript && (
+              <p className="text-xs text-gray-300 bg-white/5 rounded-xl px-3 py-1.5">
+                Heard: <span className="text-white font-semibold">{transcript}</span>
+              </p>
+            )}
           </div>
         )}
-        {result === 'listening' && isTranscribing && (
-          <p className="text-violet-400 text-sm animate-pulse mb-4">⏳ Grading your pronunciation…</p>
+        {result === 'listening' && !isListening && heard && (
+          <p className="text-violet-400 text-sm animate-pulse mb-4">⏳ Grading…</p>
         )}
       </div>
 
       {/* action buttons */}
       <div className="flex gap-3 justify-center">
-        {(result === 'idle' || (result === 'listening' && !isTranscribing)) && (
+        {(result === 'idle' || result === 'listening') && (
           <div className="flex gap-3 justify-center">
-            {!isRecording ? (
+            {!isListening ? (
               <button
                 onClick={handleListen}
                 className="px-8 py-3 rounded-2xl font-bold text-sm bg-violet-600 hover:bg-violet-500 text-white transition-all"
@@ -252,7 +255,7 @@ function ActiveQuest({
               <>
                 <p className="self-center text-xs text-gray-500">Say it, then →</p>
                 <button
-                  onClick={stopRecording}
+                  onClick={stopListening}
                   className="px-8 py-3 rounded-2xl font-bold text-sm bg-red-600 hover:bg-red-500 text-white transition-all ring-4 ring-red-500/20"
                 >
                   ⏹ Stop & Grade
